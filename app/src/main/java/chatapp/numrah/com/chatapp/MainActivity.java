@@ -18,11 +18,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        logger = new AppLogger();
         setContentView(R.layout.activity_main);
         initViews();
+        createSocketConnection();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        createSocketConnection();
     }
 
     private void initViews(){
+        logger.info("Init views");
         Context con = this;
         boysView = ((MainActivity) con).findViewById(R.id.boys_matching);
         girlsView = ((MainActivity) con).findViewById(R.id.girls_matching);
@@ -39,6 +48,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         allImage.setOnClickListener(this);
         acceptButton.setOnClickListener(this);
         logger = new AppLogger();
+        logger.info("Ending Init views");
+    }
+
+    private void createSocketConnection(){
+        logger.info("Going to init socket connection");
+        AppUtil.getInstance().initSocketConnection(getApplicationContext());
     }
 
     @Override
@@ -70,7 +85,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void setSelected(int newSelected){
-        int oldSelected = ChatAppData.getInstance(getApplicationContext()).getInt(DatabaseConstants.MATCH_SELECTED);
+        int oldSelected = ChatAppData.getInstance(getApplicationContext()).getInt(AppConstants.MATCH_SELECTED);
         logger.info(" The old selected data is "+oldSelected);
         if(oldSelected != -1){
             if(oldSelected == 1){
@@ -89,7 +104,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }else{
             changeState(allView, true);
         }
-        ChatAppData.getInstance(getApplicationContext()).putInt(DatabaseConstants.MATCH_SELECTED, newSelected);
+        ChatAppData.getInstance(getApplicationContext()).putInt(AppConstants.MATCH_SELECTED, newSelected);
     }
 
     /*
