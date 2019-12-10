@@ -21,7 +21,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         logger = new AppLogger();
         setContentView(R.layout.activity_main);
         initViews();
-        createSocketConnection();
     }
 
     @Override
@@ -58,7 +57,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        Log.i("ATzzzzz", String.valueOf(v.getId()));
         switch(v.getId()) {
             case R.id.boys_matching:
             case R.id.boys_matching_image:
