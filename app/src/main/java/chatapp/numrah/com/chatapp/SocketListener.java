@@ -1,32 +1,21 @@
 package chatapp.numrah.com.chatapp;
 
 
-
 import android.net.Uri;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONObject;
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
 
-import javax.net.SocketFactory;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.*;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
-import java.security.KeyStore;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SocketListener {
-    static String server = "dev.wefaaq.net:433";
+    static String server = "dev.wefaaq.net:443";
     static AppLogger logger;
 
-    private static Socket socket = null;
+//    private static Socket socket = null;
 
     public static SocketListener listener;
 
@@ -43,28 +32,79 @@ public class SocketListener {
 
     public static void connectToSocet(String sessionId, String udid, String token){
         try {
-            if (socket == null) {
-//                server = server+"?session-id=" + sessionId + "&udid=" + udid + "&token=" + token;
-                logger.info("Going to connect to server");
-                Uri.Builder builder = new Uri.Builder();
-                builder.scheme("wss")
-                        .encodedAuthority(server)
 
-                        .appendQueryParameter("session-id", sessionId)
-                        .appendQueryParameter("udid", udid)
-                        .appendQueryParameter("token", token);
-                logger.info(" The server URL "+ builder.build().toString() + "  "+ builder.build().getScheme() + "  "+ builder.build().getAuthority());
-                HashMap<String, String> httpHeaders = new HashMap<>();
-                httpHeaders.put("Sec-Websocket-Protocol","v2.fadfedly.com/2.1");
-                httpHeaders.put("User-Agent","FadFed/0.1(Android/9.0)");
-                SocketClient socks = new SocketClient(new URI(builder.build().toString()), new Draft_6455(), httpHeaders);
-                socks.connect();
-            }
+//                server = server+"?session-id=" + sessionId + "&udid=" + udid + "&token=" + token;
+            logger.info("Going to connect to server");
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme("wss")
+                    .encodedAuthority(server)
+
+                    .appendQueryParameter("session-id", sessionId)
+                    .appendQueryParameter("udid", udid)
+                    .appendQueryParameter("token", token);
+            logger.info(" The server URL "+ builder.build().toString() + "  "+ builder.build().getScheme() + "  "+ builder.build().getAuthority());
+            HashMap<String, String> httpHeaders = new HashMap<>();
+            httpHeaders.put("Sec-Websocket-Protocol","v2.fadfedly.com/2.1");
+            httpHeaders.put("User-Agent","FadFed/0.1(Android/9.0)");
+            connectToServer(builder.build(), httpHeaders);
+//                SocketClient socks = new SocketClient(new URI(builder.build().toString()), new Draft_6455(Collections.<IExtension>emptyList(), Collections.<IProtocol>emptyList(), 2147), httpHeaders);
+//                socks.connect();
+
         }catch (Exception exp){
             logger.error("SocketListener : ConnectToSocket");
             logger.error(exp.toString());
         }
     }
+
+    private static void connectToServer(Uri serverUri, Map<String, String> header){
+        com.github.nkzawa.socketio.client.Socket socket  = null;
+        try {
+            socket = IO.socket(new URI(serverUri.toString()));
+
+        }catch (URISyntaxException exp){
+            logger.info(" The exception is ");
+            logger.error(exp.toString());
+            logger.error(exp.getMessage());
+            logger.error(exp.getReason());
+        }
+        socket.on("connection", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                logger.info("connectToServer : ");
+            }
+        });
+        socket.on(com.github.nkzawa.socketio.client.Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                logger.info("connectToServer : ");
+                logger.info("Event disconnect");
+            }
+        });
+        socket.on(com.github.nkzawa.socketio.client.Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                logger.info("connectToServer : ");
+                logger.info("Event connect error");
+                for(Object a : args){
+                    logger.info(" The error is ");
+                    logger.info(((Exception)a).getMessage());
+                    logger.info(((Exception)a).toString());
+                }
+            }
+        });
+        socket.on(com.github.nkzawa.socketio.client.Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                logger.info("connectToServer : ");
+                logger.info("Event connect timeout");
+            }
+        });
+
+        socket.connect();
+    }
+
+
+
 
 //    public void sendData(JSONObject data){
 //        try {
@@ -118,43 +158,43 @@ public class SocketListener {
 //            }
 //            return null;
 //    }
-    public static class SocketClient extends WebSocketClient{
-
-        public SocketClient(URI serverUri, Draft draft, Map<String,String> httpHeader){
-            super(serverUri, draft, httpHeader);
-        }
-        public SocketClient(URI serverUri, Draft draft){
-            super(serverUri, draft);
-        }
-
-        public SocketClient(URI serverUri){
-            super(serverUri);
-        }
-
-        @Override
-        public void onMessage(String message) {
-            logger.info("SocketClient : OnMessage");
-            logger.info(message);
-        }
-
-        @Override
-        public void onOpen(ServerHandshake handshakedata) {
-            logger.info("SocketClient : onOpen");
-            logger.info(handshakedata.getHttpStatus() + "");
-        }
-
-        @Override
-        public void onClose(int code, String reason, boolean remote) {
-            logger.info("SocketClient : onClose");
-            logger.info(reason);
-            logger.info(code + "");
-            logger.info( remote + "");
-        }
-
-        @Override
-        public void onError(Exception ex) {
-            logger.info("SocketClient : onError");
-            logger.info(ex.toString());
-        }
-    }
+//    public static class SocketClient extends WebSocketClient{
+//
+//        public SocketClient(URI serverUri, Draft draft, Map<String,String> httpHeader){
+//            super(serverUri, draft, httpHeader);
+//        }
+//        public SocketClient(URI serverUri, Draft draft){
+//            super(serverUri, draft);
+//        }
+//
+//        public SocketClient(URI serverUri){
+//            super(serverUri);
+//        }
+//
+//        @Override
+//        public void onMessage(String message) {
+//            logger.info("SocketClient : OnMessage");
+//            logger.info(message);
+//        }
+//
+//        @Override
+//        public void onOpen(ServerHandshake handshakedata) {
+//            logger.info("SocketClient : onOpen");
+//            logger.info(handshakedata.getHttpStatus() + "");
+//        }
+//
+//        @Override
+//        public void onClose(int code, String reason, boolean remote) {
+//            logger.info("SocketClient : onClose");
+//            logger.info(reason);
+//            logger.info(code + "");
+//            logger.info( remote + "");
+//        }
+//
+//        @Override
+//        public void onError(Exception ex) {
+//            logger.info("SocketClient : onError");
+//            logger.info(ex.toString());
+//        }
+//    }
 }

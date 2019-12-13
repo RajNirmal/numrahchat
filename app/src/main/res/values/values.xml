@@ -13,4 +13,6 @@
     <dimen name="image_padding">25dp</dimen>
 
     <dimen name="bottom_card_view_height">10%</dimen>
+
+    <dimen name="my_action_bar_size">96dp</dimen>
 </resources>

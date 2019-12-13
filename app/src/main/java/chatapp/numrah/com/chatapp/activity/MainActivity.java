@@ -1,13 +1,12 @@
-package chatapp.numrah.com.chatapp;
+package chatapp.numrah.com.chatapp.activity;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.percent.PercentRelativeLayout;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import chatapp.numrah.com.chatapp.*;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
