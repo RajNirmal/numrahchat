@@ -15,4 +15,6 @@
     <dimen name="bottom_card_view_height">10%</dimen>
 
     <dimen name="my_action_bar_size">96dp</dimen>
+
+    <dimen name="chat_box_padding">10dp</dimen>
 </resources>

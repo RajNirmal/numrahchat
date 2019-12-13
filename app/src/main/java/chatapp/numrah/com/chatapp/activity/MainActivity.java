@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.percent.PercentRelativeLayout;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 import chatapp.numrah.com.chatapp.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,9 +82,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.start_matching_button:
                 logger.info("Start Matching");
-                sendMatchingMessage();
+                if(checkSelectedPrefs()) {
+                    sendMatchingMessage();
+                }
                 break;
         }
+    }
+
+    private boolean checkSelectedPrefs(){
+        Context context = this;
+        int selectedMatching = ChatAppData.getInstance(context).getInt(AppConstants.MATCH_SELECTED);
+        if(selectedMatching == -1){
+            Toast.makeText(context, " Please select a gender to match with ", Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
     }
 
     private void sendMatchingMessage(){

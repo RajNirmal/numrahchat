@@ -38,8 +38,8 @@ public class AppUtil {
     //Always use application context for this
     public String initSocketConnection(Context context){
         mContext=context;
-        clearPreviousSessionData();
         appData = ChatAppData.getInstance(context);
+        clearPreviousSessionData();
         String sessionId = getAlphaNumericString(AppConstants.uuidSize);
         String udid = getId(mContext);
         String token = getToken(sessionId, udid);
@@ -119,6 +119,7 @@ public class AppUtil {
         appData.deleteData(AppConstants.SESSION_ID);
         appData.deleteData(AppConstants.SERVER_ID);
         appData.deleteData(AppConstants.IS_SESSION_READY);
+        appData.deleteData(AppConstants.MATCH_SELECTED);
     }
 
     public class MessageHandler {
