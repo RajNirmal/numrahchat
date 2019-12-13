@@ -20,11 +20,19 @@ public class ChatAppData extends DataHandler {
         return appData;
     }
 
+    public void remove(String key){
+
+    }
+
     public void putString(String key, String value){
         insertData(key, value);
     }
 
     public void putInt(String key, int value){
+        insertData(key, String.valueOf(value));
+    }
+
+    public void putBoolean(String key, boolean value){
         insertData(key, String.valueOf(value));
     }
 
@@ -42,6 +50,16 @@ public class ChatAppData extends DataHandler {
         String a = "";
         try{
             a = getData(key);
+        }catch (Exception exp){
+            logger.error(exp.toString());
+        }
+        return a;
+    }
+
+    public Boolean getBoolean(String key){
+        Boolean a = false;
+        try{
+            a = Boolean.valueOf(getData(key));
         }catch (Exception exp){
             logger.error(exp.toString());
         }

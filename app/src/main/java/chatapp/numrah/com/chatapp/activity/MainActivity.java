@@ -2,11 +2,15 @@ package chatapp.numrah.com.chatapp.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.percent.PercentRelativeLayout;
 import android.view.View;
 import android.widget.ImageView;
 import chatapp.numrah.com.chatapp.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -77,8 +81,36 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             case R.id.start_matching_button:
                 logger.info("Start Matching");
+                sendMatchingMessage();
                 break;
         }
+    }
+
+    private void sendMatchingMessage(){
+        try {
+            Context context = getApplicationContext();
+            int selectedMatching = ChatAppData.getInstance(context).getInt(AppConstants.MATCH_SELECTED);
+            String algo = ChatAppData.getInstance(context).getString(AppConstants.ALGOS);
+            logger.info(algo);
+            JSONObject messageObj = new JSONObject();
+            messageObj.put("algo", new JSONArray(algo).get(0));
+            if(selectedMatching == 1){
+                messageObj.put("gender", "m");
+            }else if(selectedMatching == 2){
+                messageObj.put("gender", "f");
+            }
+
+            logger.info(" The json being sent is "+ messageObj.toString());
+            SocketListener.getInstance().sendMessageToServer("match", messageObj);
+            changeActivity();
+        }catch (JSONException exp){
+            logger.error(exp.toString());
+        }
+    }
+
+    private void changeActivity(){
+        Intent chatIntent = new Intent(this, ChatActivity.class);
+        startActivity(chatIntent);
     }
 
     private void setSelected(int newSelected){

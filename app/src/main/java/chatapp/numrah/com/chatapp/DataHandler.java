@@ -31,20 +31,49 @@ public class DataHandler extends SQLiteOpenHelper {
     }
 
     protected long insertData(String key,String value){
+        logger.info("Inserting data in to the table");
+        logger.info("Key : "+key+ " Value : "+value);
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY,key);
         contentValues.put(VALUE,value);
         SQLiteDatabase db = this.getWritableDatabase();
-        long output = db.insert(TABLE_NAME,null,contentValues);
-        if(output == -1){
-            logger.info(" An error occured while inserting the new data so updating it");
-            int out2 = db.update(TABLE_NAME,  contentValues, KEY + "=?", new String[]{key});
-            logger.info(" The no of rows affected is "+ out2);
-        }else{
-            logger.info(" The output is "+output);
+        long output;
+        if(doesKeyExist(key)) {
+            logger.info(" key already present, so updating it");
+            output = db.update(TABLE_NAME, contentValues, KEY + "=?", new String[]{key});
+            logger.info(" The no of rows affected is " + output);
+            db.close();
+        }else {
+            output = db.insert(TABLE_NAME, null, contentValues);
+
         }
-        db.close();
         return output;
+    }
+
+    protected boolean deleteData(String key){
+        try {
+            SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+            Integer cr = sqLiteDatabase.delete(TABLE_NAME, KEY + "=?", new String[]{key});
+            if (cr == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (Exception exp){
+            logger.error(" Error while deleting the keys");
+            logger.error(exp.toString());
+            return false;
+        }
+    }
+
+    protected boolean doesKeyExist(String key){
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        Cursor cr = sqLiteDatabase.query(TABLE_NAME, null, KEY + "=?", new String[] {key}, null, null, null, null);
+        if(cr.getCount() == 0){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     protected String getData(String key){
