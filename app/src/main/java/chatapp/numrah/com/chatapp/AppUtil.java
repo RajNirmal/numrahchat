@@ -1,6 +1,7 @@
 package chatapp.numrah.com.chatapp;
 
 import android.content.Context;
+import android.content.Intent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -155,12 +156,26 @@ public class AppUtil {
 
         }
 
-        public void handleMatchedMessage(JSONObject msg){
-
+        public void handleMatchedMessage(JSONObject msg) throws JSONException {
+            appData.putString(AppConstants.CHAT_ID, msg.getString(AppConstants.CHAT_ID));
+            sendMatchedBroadcast(msg, AppConstants.MSG_TYPE_MATCHED);
         }
 
-        public void handleSyncMessage(JSONObject msg){
+        public void handleSyncMessage(JSONObject msg) throws JSONException{
+            String friendUdid = msg.getJSONObject("data").getJSONObject("data").getString("udid");
+            appData.putString(AppConstants.FRIEND_USER_ID, friendUdid);
+        }
 
+        private void sendMatchedBroadcast(JSONObject message, String messageType){
+            try {
+                Intent broadcastIntent = new Intent();
+                message.put("MsgType", messageType);
+                broadcastIntent.setAction(AppConstants.BROADCAST_ACTION);
+                broadcastIntent.putExtra(AppConstants.BROADCAST_DATA, message.toString());
+                mContext.sendBroadcast(broadcastIntent);
+            }catch (JSONException exp){
+                logger.error(" ");
+            }
         }
     }
 }

@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/menu_skip"
+        android:icon="@drawable/ic_skip"
+        android:title="@string/action_skip"
+        app:showAsAction="collapseActionView"/>
+    <item
+        android:id="@+id/menu_report"
+        android:icon="@drawable/ic_report"
+        android:title="@string/action_report"
+        app:showAsAction="ifRoom|collapseActionView"/>
+    <item
+        android:id="@+id/menu_add"
+        android:icon="@drawable/ic_add"
+        android:title="@string/action_add"
+        app:showAsAction="ifRoom|collapseActionView"/>
 
 </menu>

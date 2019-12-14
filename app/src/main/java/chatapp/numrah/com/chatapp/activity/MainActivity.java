@@ -106,15 +106,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
             String algo = ChatAppData.getInstance(context).getString(AppConstants.ALGOS);
             logger.info(algo);
             JSONObject messageObj = new JSONObject();
-            messageObj.put("algo", new JSONArray(algo).get(0));
+            messageObj.put(AppConstants.SERVERMSG_ALGO, new JSONArray(algo).get(0));
             if(selectedMatching == 1){
-                messageObj.put("gender", "m");
+                messageObj.put(AppConstants.SERVERMSG_GENDER, "m");
             }else if(selectedMatching == 2){
-                messageObj.put("gender", "f");
+                messageObj.put(AppConstants.SERVERMSG_GENDER, "f");
             }
 
             logger.info(" The json being sent is "+ messageObj.toString());
-            SocketListener.getInstance().sendMessageToServer("match", messageObj);
+            SocketListener.getInstance().sendMessageToServer(AppConstants.SERVERMSG_MSGTYPE_MATCH, messageObj);
             changeActivity();
         }catch (JSONException exp){
             logger.error(exp.toString());

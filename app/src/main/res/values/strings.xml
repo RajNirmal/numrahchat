@@ -3,4 +3,12 @@
     <string name="people_around_you">People around you</string>
     <string name="chat_with">Chat with</string>
     <string name="select_one">Select one</string>
+    <!--Menu actions-->
+    <string name="action_back">Back</string>
+    <string name="action_profile">Porifle pic</string>
+    <string name="action_name">Name</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_report">Report</string>
+    <string name="action_add">Add</string>
+
 </resources>
