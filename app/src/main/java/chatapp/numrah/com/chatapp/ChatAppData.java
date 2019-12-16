@@ -21,7 +21,7 @@ public class ChatAppData extends DataHandler {
     }
 
     public void remove(String key){
-
+        deleteData(key);
     }
 
     public void putString(String key, String value){

@@ -2,6 +2,7 @@
 <resources>
     <dimen name="people_around_you_margin">8dp</dimen>
     <dimen name="text_size_small">16sp</dimen>
+    <dimen name="text_size_extra_small">12sp</dimen>
     <dimen name="text_size_medium">18sp</dimen>
     <dimen name="text_size_large">22sp</dimen>
 
@@ -16,5 +17,11 @@
 
     <dimen name="my_action_bar_size">96dp</dimen>
 
+    <!--Chat box values-->
     <dimen name="chat_box_padding">10dp</dimen>
+    <dimen name="chat_box_margin">6dp</dimen>
+
+    <dimen name="chat_box_layout_padding">8dp</dimen>
+    <dimen name="chat_box_ts_image_margin">4dp</dimen>
+
 </resources>

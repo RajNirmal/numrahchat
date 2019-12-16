@@ -83,7 +83,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.start_matching_button:
                 logger.info("Start Matching");
                 if(checkSelectedPrefs()) {
-                    sendMatchingMessage();
+                    AppUtil.getInstance().sendMatchingMessage(this);
+                    changeActivity();
                 }
                 break;
         }
@@ -99,27 +100,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return true;
     }
 
-    private void sendMatchingMessage(){
-        try {
-            Context context = getApplicationContext();
-            int selectedMatching = ChatAppData.getInstance(context).getInt(AppConstants.MATCH_SELECTED);
-            String algo = ChatAppData.getInstance(context).getString(AppConstants.ALGOS);
-            logger.info(algo);
-            JSONObject messageObj = new JSONObject();
-            messageObj.put(AppConstants.SERVERMSG_ALGO, new JSONArray(algo).get(0));
-            if(selectedMatching == 1){
-                messageObj.put(AppConstants.SERVERMSG_GENDER, "m");
-            }else if(selectedMatching == 2){
-                messageObj.put(AppConstants.SERVERMSG_GENDER, "f");
-            }
-
-            logger.info(" The json being sent is "+ messageObj.toString());
-            SocketListener.getInstance().sendMessageToServer(AppConstants.SERVERMSG_MSGTYPE_MATCH, messageObj);
-            changeActivity();
-        }catch (JSONException exp){
-            logger.error(exp.toString());
-        }
-    }
 
     private void changeActivity(){
         Intent chatIntent = new Intent(this, ChatActivity.class);

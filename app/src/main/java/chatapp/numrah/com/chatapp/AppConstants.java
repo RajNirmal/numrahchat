@@ -11,6 +11,8 @@ public class AppConstants {
     public static final String CHAT_ID = "chatId";
     public static final String USER_ID = "udid";
     public static final String FRIEND_USER_ID = "friendudid";
+    public static final String ACTIVTIY_FOREGROUND = "chatforeground";
+    public static final String WAITING_MESSAGE_LIST = "waitingmessage";
 
     //Constants for sockets
     public static int uuidSize = 10;
@@ -22,7 +24,9 @@ public class AppConstants {
     public static final String MSG_TYPE_LEAVE = "leave";
     public static final String MSG_TYPE_MATCHED = "matched";
     public static final String MSG_TYPE_SYNC = "sync";
-    public static final String MSG_TYPE_CHAT = "chat";
+    public static final String MSG_TYPE_CHAT = "message";
+    public static final String MSG_TYPE_ACK = "ack";
+    public static final String MSG_TYPE_SEEN = "seen";
 
     //Broadcast intent
     public static final String BROADCAST_ACTION = "numrah.com.chatapp.message.broadcast";
@@ -30,12 +34,20 @@ public class AppConstants {
 
     //Sending message constants
     public static final String SERVERMSG_TO = "to";
-    public static final String SERVERMSG_FRIENDUDID = "id";
+    public static final String SERVERMSG_CHAT_ID = "id";
     public static final String SERVERMSG_CHATMSG = "content";
     public static final String SERVERMSG_TIMESTAMP = "ts";
     public static final String SERVERMSG_ALGO = "algo";
     public static final String SERVERMSG_GENDER = "gender";
     public static final String SERVERMSG_MSGTYPE_MATCH = "match";
-    public static final String SERVERMSG_MSGTYPE_MESSAGESEND = "send";
+    public static final String SERVERMSG_MSGTYPE_MESSAGE_SEND = "send";
+    public static final String SERVERMSG_MSGTYPE_MESSAGE_REF = "ref";
+    public static final String SERVERMSG_MSGTYPE_MESSAGE_STATUS = "status";
 
+    public static final String SERVERMSG_STATUS_RECEIVED = "received";
+    public static final String SERVERMSG_STATUS_READ = "read";
+
+
+    //Random constants
+    public static final String isMe = "isme";
 }

@@ -2,6 +2,7 @@ package chatapp.numrah.com.chatapp;
 
 import android.content.Context;
 import android.content.Intent;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -106,6 +107,13 @@ public class AppUtil {
                 case AppConstants.MSG_TYPE_SYNC:
                     handler.handleSyncMessage(msgBody);
                     break;
+                case AppConstants.MSG_TYPE_CHAT:
+                    handler.handleChatMessage(msgBody);
+                    break;
+                case AppConstants.MSG_TYPE_SEEN:
+                case AppConstants.MSG_TYPE_ACK:
+                    handler.handleAckMessage(msgType, msgBody);
+                    break;
                 default:
                     logger.info(" This message type is not handled");
                     break;
@@ -116,7 +124,29 @@ public class AppUtil {
             logger.error(exp.toString());
         }
     }
-    private void clearPreviousSessionData(){
+
+    public void sendMatchingMessage(Context context){
+        try {
+            int selectedMatching = ChatAppData.getInstance(context).getInt(AppConstants.MATCH_SELECTED);
+            String algo = ChatAppData.getInstance(context).getString(AppConstants.ALGOS);
+            logger.info(algo);
+            JSONObject messageObj = new JSONObject();
+            messageObj.put(AppConstants.SERVERMSG_ALGO, new JSONArray(algo).get(0));
+            if(selectedMatching == 1){
+                messageObj.put(AppConstants.SERVERMSG_GENDER, "m");
+            }else if(selectedMatching == 2){
+                messageObj.put(AppConstants.SERVERMSG_GENDER, "f");
+            }
+
+            logger.info(" The json being sent is "+ messageObj.toString());
+            SocketListener.getInstance().sendMessageToServer(AppConstants.SERVERMSG_MSGTYPE_MATCH, messageObj);
+        }catch (JSONException exp){
+            logger.error(exp.toString());
+        }
+    }
+
+
+    public void clearPreviousSessionData(){
         appData.deleteData(AppConstants.SESSION_ID);
         appData.deleteData(AppConstants.SERVER_ID);
         appData.deleteData(AppConstants.IS_SESSION_READY);
@@ -153,12 +183,13 @@ public class AppUtil {
         }
 
         public void handleLeaveMessage(JSONObject msg){
-
+            appData.deleteData(AppConstants.CHAT_ID);
+            appData.deleteData(AppConstants.FRIEND_USER_ID);
         }
 
         public void handleMatchedMessage(JSONObject msg) throws JSONException {
             appData.putString(AppConstants.CHAT_ID, msg.getString(AppConstants.CHAT_ID));
-            sendMatchedBroadcast(msg, AppConstants.MSG_TYPE_MATCHED);
+            sendBroadcast(msg, AppConstants.MSG_TYPE_MATCHED);
         }
 
         public void handleSyncMessage(JSONObject msg) throws JSONException{
@@ -166,7 +197,14 @@ public class AppUtil {
             appData.putString(AppConstants.FRIEND_USER_ID, friendUdid);
         }
 
-        private void sendMatchedBroadcast(JSONObject message, String messageType){
+        public void handleChatMessage(JSONObject msg) throws JSONException{
+            sendBroadcast(msg, AppConstants.MSG_TYPE_CHAT);
+        }
+
+        public void handleAckMessage(String msgType, JSONObject msg) throws JSONException{
+            sendBroadcast(msg, msgType);
+        }
+        private void sendBroadcast(JSONObject message, String messageType){
             try {
                 Intent broadcastIntent = new Intent();
                 message.put("MsgType", messageType);
@@ -176,6 +214,60 @@ public class AppUtil {
             }catch (JSONException exp){
                 logger.error(" ");
             }
+        }
+    }
+    public void sendAck(JSONObject message){
+        try{
+            //it is messed up and random here so do not use it for reference
+            JSONObject ackMessage = new JSONObject();
+            ackMessage.put(AppConstants.SERVERMSG_CHAT_ID, message.getString(AppConstants.SERVERMSG_TIMESTAMP));
+            ackMessage.put(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_REF, message.get(AppConstants.SERVERMSG_CHAT_ID));
+            String status = AppConstants.SERVERMSG_STATUS_RECEIVED;
+            if(appData.getBoolean(AppConstants.ACTIVTIY_FOREGROUND)) {
+                status = AppConstants.SERVERMSG_STATUS_READ;
+            }else{
+                addWaitingStateMessage(ackMessage);
+            }
+            ackMessage.put(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_STATUS, status);
+            SocketListener.getInstance().sendMessageToServer(AppConstants.MSG_TYPE_STATUS, ackMessage);
+        }catch (JSONException exp){
+            logger.error("Error while forming ack message");
+            logger.error(exp.toString());
+        }
+    }
+
+    public void addWaitingStateMessage(JSONObject ackMessage) throws JSONException{
+        String waitingData = appData.getString(AppConstants.WAITING_MESSAGE_LIST);
+        if(waitingData.isEmpty()){
+            ackMessage.put(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_STATUS, AppConstants.SERVERMSG_STATUS_RECEIVED);
+            JSONArray msgs = new JSONArray();
+            msgs.put(ackMessage);
+            waitingData = msgs.toString();
+        }else{
+            JSONArray dataArray = new JSONArray(waitingData);
+            logger.info("addWaitingStateMessage");
+            logger.info(dataArray.toString());
+            dataArray.put(ackMessage);
+            logger.info(dataArray.toString());
+            waitingData = ackMessage.toString();
+        }
+        appData.putString(AppConstants.WAITING_MESSAGE_LIST, waitingData);
+    }
+
+    public void handleWaitingMessages(){
+        String waitingData = appData.getString(AppConstants.WAITING_MESSAGE_LIST);
+        try{
+            JSONArray dataArray = new JSONArray(waitingData);
+            for(int i = 0 ; i < dataArray.length() ; i++){
+                JSONObject data = dataArray.getJSONObject(i);
+                data.put(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_STATUS, AppConstants.SERVERMSG_STATUS_READ);
+                SocketListener.getInstance().sendMessageToServer(AppConstants.MSG_TYPE_STATUS, data);
+            }
+        }catch (Exception xp){
+            logger.error(" Error while handling waiting messages");
+            logger.error(xp.toString());
+        }finally {
+            appData.deleteData(AppConstants.WAITING_MESSAGE_LIST);
         }
     }
 }

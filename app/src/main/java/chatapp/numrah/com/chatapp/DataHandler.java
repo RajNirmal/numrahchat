@@ -69,11 +69,14 @@ public class DataHandler extends SQLiteOpenHelper {
     protected boolean doesKeyExist(String key){
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         Cursor cr = sqLiteDatabase.query(TABLE_NAME, null, KEY + "=?", new String[] {key}, null, null, null, null);
+        boolean result;
         if(cr.getCount() == 0){
-            return false;
+            result = false;
         }else{
-            return true;
+            result = true;
         }
+        cr.close();
+        return result;
     }
 
     protected String getData(String key){

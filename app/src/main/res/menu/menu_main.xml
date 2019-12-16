@@ -6,7 +6,7 @@
         android:id="@+id/menu_skip"
         android:icon="@drawable/ic_skip"
         android:title="@string/action_skip"
-        app:showAsAction="collapseActionView"/>
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/menu_report"
         android:icon="@drawable/ic_report"

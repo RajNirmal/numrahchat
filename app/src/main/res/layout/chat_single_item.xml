@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/chat_main_singleitem_layout"
+    android:orientation="vertical"
+    android:layout_marginStart="@dimen/chat_box_margin"
+    android:layout_marginBottom="@dimen/chat_box_margin"
+    android:layout_marginTop="@dimen/chat_box_margin"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <android.support.v7.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/chat_box"
+        android:id="@+id/chat_cardview">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/chat_relative_layout"
+            android:padding="@dimen/chat_box_layout_padding">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/chat_box_text"
+                android:textColor="@color/colorChatTextColor"
+                android:paddingLeft="@dimen/chat_box_layout_padding"
+                android:text="a"
+                android:textSize="@dimen/text_size_medium"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/chat_box_timestamp"
+                android:layout_below="@id/chat_box_text"
+                android:layout_toEndOf="@id/chat_box_text"
+                android:text="10:20"
+                android:layout_marginRight="@dimen/chat_box_ts_image_margin"
+                android:textColor="@color/colorChatTextColor"
+                android:textSize="@dimen/text_size_extra_small"/>
+
+            <ImageView
+                android:id="@+id/chat_message_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chat_box_text"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_toEndOf="@id/chat_box_timestamp"
+                android:src="@drawable/clock" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

@@ -90,7 +90,7 @@ public class SocketListener  {
         @Override
         public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
             super.onMessage(webSocket, text);
-            logger.info("onMessage" + text);
+//            logger.info("onMessage" + text);
             String messageType;
             JSONObject message;
             try {
