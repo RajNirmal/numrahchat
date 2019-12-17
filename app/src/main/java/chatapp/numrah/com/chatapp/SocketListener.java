@@ -84,7 +84,9 @@ public class SocketListener  {
         @Override
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
             super.onFailure(webSocket, t, response);
-            logger.error("WebSocketListener : Connection failure "+response.toString());
+            if(response != null) {
+                logger.error("WebSocketListener : Connection failure " + response.toString());
+            }
         }
 
         @Override

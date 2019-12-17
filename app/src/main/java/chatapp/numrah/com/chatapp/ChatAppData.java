@@ -51,6 +51,7 @@ public class ChatAppData extends DataHandler {
         try{
             a = getData(key);
         }catch (Exception exp){
+            logger.error(" Error while fetching key : "+key);
             logger.error(exp.toString());
         }
         return a;

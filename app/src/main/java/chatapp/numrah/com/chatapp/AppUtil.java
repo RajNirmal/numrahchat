@@ -2,6 +2,9 @@ package chatapp.numrah.com.chatapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.support.v4.content.ContextCompat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,12 +44,20 @@ public class AppUtil {
     public String initSocketConnection(Context context){
         mContext=context;
         appData = ChatAppData.getInstance(context);
-        clearPreviousSessionData();
+//        clearPreviousSessionData();
         String sessionId = getAlphaNumericString(AppConstants.uuidSize);
         String udid = getId(mContext);
         String token = getToken(sessionId, udid);
         SocketListener.getInstance(sessionId,udid, token);
         return "";
+    }
+
+    public void restablishSocket(Context context){
+        mContext = context;
+        String sessionId = appData.getString(AppConstants.SESSION_ID);
+        String udid = getId(mContext);
+        String token = getToken(sessionId, udid);
+        SocketListener.getInstance(sessionId,udid, token);
     }
 
     private String getId(Context context) {
@@ -185,6 +196,7 @@ public class AppUtil {
         public void handleLeaveMessage(JSONObject msg){
             appData.deleteData(AppConstants.CHAT_ID);
             appData.deleteData(AppConstants.FRIEND_USER_ID);
+            sendBroadcast(msg, AppConstants.MSG_TYPE_LEAVE);
         }
 
         public void handleMatchedMessage(JSONObject msg) throws JSONException {
@@ -236,6 +248,17 @@ public class AppUtil {
         }
     }
 
+    public void sendLeaveMessage(){
+        try{
+            JSONObject message = new JSONObject();
+            message.put(AppConstants.SERVERMSG_ACTUAL_CHATID, appData.getString(AppConstants.CHAT_ID));
+            SocketListener.getInstance().sendMessageToServer(AppConstants.MSG_TYPE_LEAVE, message);
+        }catch (Exception exp){
+            logger.error(" Error while sending the leave message");
+            logger.error(exp.toString());
+        }
+    }
+
     public void addWaitingStateMessage(JSONObject ackMessage) throws JSONException{
         String waitingData = appData.getString(AppConstants.WAITING_MESSAGE_LIST);
         if(waitingData.isEmpty()){
@@ -257,11 +280,13 @@ public class AppUtil {
     public void handleWaitingMessages(){
         String waitingData = appData.getString(AppConstants.WAITING_MESSAGE_LIST);
         try{
-            JSONArray dataArray = new JSONArray(waitingData);
-            for(int i = 0 ; i < dataArray.length() ; i++){
-                JSONObject data = dataArray.getJSONObject(i);
-                data.put(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_STATUS, AppConstants.SERVERMSG_STATUS_READ);
-                SocketListener.getInstance().sendMessageToServer(AppConstants.MSG_TYPE_STATUS, data);
+            if(!waitingData.isEmpty()) {
+                JSONArray dataArray = new JSONArray(waitingData);
+                for (int i = 0; i < dataArray.length(); i++) {
+                    JSONObject data = dataArray.getJSONObject(i);
+                    data.put(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_STATUS, AppConstants.SERVERMSG_STATUS_READ);
+                    SocketListener.getInstance().sendMessageToServer(AppConstants.MSG_TYPE_STATUS, data);
+                }
             }
         }catch (Exception xp){
             logger.error(" Error while handling waiting messages");
@@ -269,5 +294,11 @@ public class AppUtil {
         }finally {
             appData.deleteData(AppConstants.WAITING_MESSAGE_LIST);
         }
+    }
+
+    public boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

@@ -9,24 +9,28 @@ public class ChatMessage {
     // 2 - Seen - double tick
     private int messageState;
     private long timeStamp;
-    private boolean isMe;
+
+    //1 - is me
+    //2 - Not me
+    //3 - leave message
+    private int isMe;
 
     public ChatMessage(){
 
     }
 
-    public ChatMessage(String chatId, String msg, int msgState, long timeStamp, boolean isMe){
+    public ChatMessage(String chatId, String msg, int msgState, long timeStamp, int isMe){
         this.chatId = chatId;
         message = msg;
         messageState = msgState;
         this.timeStamp = timeStamp;
         this.isMe = isMe;
     }
-    public boolean isMe() {
+    public int isMe() {
         return isMe;
     }
 
-    public void setMe(boolean me) {
+    public void setMe(int me) {
         isMe = me;
     }
 

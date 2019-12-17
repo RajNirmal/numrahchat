@@ -4,6 +4,7 @@
     android:id="@+id/chat_main_singleitem_layout"
     android:orientation="vertical"
     android:layout_marginStart="@dimen/chat_box_margin"
+    android:layout_marginEnd="@dimen/chat_box_margin"
     android:layout_marginBottom="@dimen/chat_box_margin"
     android:layout_marginTop="@dimen/chat_box_margin"
     android:layout_width="match_parent"

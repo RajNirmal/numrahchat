@@ -43,6 +43,7 @@ public class AppConstants {
     public static final String SERVERMSG_MSGTYPE_MESSAGE_SEND = "send";
     public static final String SERVERMSG_MSGTYPE_MESSAGE_REF = "ref";
     public static final String SERVERMSG_MSGTYPE_MESSAGE_STATUS = "status";
+    public static final String SERVERMSG_ACTUAL_CHATID = "chatid";
 
     public static final String SERVERMSG_STATUS_RECEIVED = "received";
     public static final String SERVERMSG_STATUS_READ = "read";
@@ -50,4 +51,11 @@ public class AppConstants {
 
     //Random constants
     public static final String isMe = "isme";
+
+    //Is me constants
+    public static final int me = 1;
+    public static final int other = 2;
+    public static final int left = 3;
+    public static final int me_after_me = 4;
+    public static final int other_after_other = 5;
 }

@@ -4,11 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
@@ -25,7 +28,7 @@ public class ChatActivity extends AppCompatActivity {
     AppLogger logger;
     ImageView chatSendButton;
     RecyclerView chatView;
-    BroadcastReceiver chatReceiver;
+    BroadcastReceiver chatReceiver, internetReceiver;
     TextView username;
     ChatAdapter adapter;
     @Override
@@ -62,28 +65,43 @@ public class ChatActivity extends AppCompatActivity {
         LinearLayoutManager.class.getClassLoader();
         chatView.setLayoutManager(mLayoutManager);
         ArrayList<ChatMessage> dataSet = new ArrayList<>();
-        adapter = new ChatAdapter(dataSet);
+        adapter = new ChatAdapter(getApplicationContext(), dataSet);
         chatView.setAdapter(adapter);
         chatReceiver = new MessageBroadcastReceiver();
         IntentFilter broadcastFilter = new IntentFilter();
         broadcastFilter.addAction(AppConstants.BROADCAST_ACTION);
         this.registerReceiver(chatReceiver, broadcastFilter);
+        registerConnectivityBroadcast();
     }
 
+    private void registerConnectivityBroadcast(){
+        IntentFilter broadcastFilter = new IntentFilter();
+        broadcastFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        internetReceiver = new ConnectivityBroadcastReceiver();
+        this.registerReceiver(internetReceiver, broadcastFilter);
+    }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         unregisterReceiver(chatReceiver);
-        deleteChatData();
+        unregisterReceiver(internetReceiver);
+        leaveCurrentChat();
+        super.onDestroy();
     }
 
+    private void leaveCurrentChat(){
+        deleteChatData();
+        AppUtil.getInstance().sendLeaveMessage();
+    }
     private void deleteChatData(){
         AppUtil.getInstance().clearPreviousSessionData();
-        loadingBar.setVisibility(View.VISIBLE);
-        chatView.setVisibility(View.GONE);
         text.setEnabled(false);
         chatSendButton.setEnabled(false);
+        loadingBar.setVisibility(View.VISIBLE);
+        chatView.setVisibility(View.GONE);
+        ArrayList<ChatMessage> dataSet = new ArrayList<>();
+        adapter = new ChatAdapter(getApplicationContext(), dataSet);
+        chatView.setAdapter(adapter);
     }
     private void startChat(){
         loadingBar.setVisibility(View.GONE);
@@ -126,7 +144,7 @@ public class ChatActivity extends AppCompatActivity {
                     message.put(AppConstants.SERVERMSG_CHATMSG, chatText);
                     message.put(AppConstants.SERVERMSG_TIMESTAMP, timeStamp);
                     SocketListener.getInstance().sendMessageToServer(AppConstants.SERVERMSG_MSGTYPE_MESSAGE_SEND, message);
-                    ChatMessage msg = new ChatMessage(chatId,chatText, 0,Long.valueOf(timeStamp), true);
+                    ChatMessage msg = new ChatMessage(chatId,chatText, 0,Long.valueOf(timeStamp), AppConstants.me);
                     addChatMessage(msg);
                     chatView.smoothScrollToPosition(chatView.getAdapter().getItemCount() - 1);
                 }catch (JSONException exp){
@@ -160,7 +178,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == R.id.menu_skip){
-            deleteChatData();
+            leaveCurrentChat();
             AppUtil.getInstance().sendMatchingMessage(this);
         }
         return super.onOptionsItemSelected(item);
@@ -179,18 +197,35 @@ public class ChatActivity extends AppCompatActivity {
                     storeChatdata(message);
                     startChat();
                 }else if(msgType.equals(AppConstants.MSG_TYPE_CHAT)){
-                    message.put(AppConstants.isMe, false);
+                    message.put(AppConstants.isMe, 2);
                     addChatMessage(message);
                     AppUtil.getInstance().sendAck(message);
                 }else if(msgType.equals(AppConstants.MSG_TYPE_ACK)){
                     updateAck(msgType, message);
                 }else if(msgType.equals(AppConstants.MSG_TYPE_SEEN)){
                     updateAck(msgType, message);
+                }else if(msgType.equals(AppConstants.MSG_TYPE_LEAVE)){
+                    addLeaveMessage();
+                    disableChat();
                 }
             }catch (JSONException exp){
                 logger.error(" Error while parsing data from the broadcast");
                 logger.error(exp.toString());
             }
+        }
+    }
+
+    public class ConnectivityBroadcastReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            logger.info(" Network related change has happened");
+            if(AppUtil.getInstance().isNetworkAvailable()){
+                logger.info("network is available re-establishing connection");
+//                AppUtil.getInstance().restablishSocket(getApplicationContext());
+            }else {
+                logger.info("Network not connected");
+            }
+
         }
     }
 
@@ -218,7 +253,7 @@ public class ChatActivity extends AppCompatActivity {
     private void addChatMessage(JSONObject message){
         ChatMessage msg = new ChatMessage();
         try {
-            msg.setMe(message.getBoolean(AppConstants.isMe));
+            msg.setMe(message.getInt(AppConstants.isMe));
             msg.setTimeStamp(Long.valueOf(message.getString(AppConstants.SERVERMSG_TIMESTAMP)));
             msg.setMessage(message.getString(AppConstants.SERVERMSG_CHATMSG));
             msg.setChatId(message.getString(AppConstants.SERVERMSG_CHAT_ID));
@@ -230,9 +265,41 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void addChatMessage(ChatMessage chatMessage){
+        //Check for tailing changes
+        if(adapter.getItemCount() > 1) {
+            int previousChatSender = adapter.getChatMessages().get(adapter.getItemCount() - 1).isMe();
+            logger.info(" Previous chat sender : "+previousChatSender   + " Current chat sender : "+chatMessage.isMe());
+            if(previousChatSender == chatMessage.isMe()){
+                if(previousChatSender == AppConstants.me){
+                    adapter.getChatMessages().get(adapter.getItemCount() - 1).setMe(AppConstants.me_after_me);
+                }else if(previousChatSender == AppConstants.other){
+                    adapter.getChatMessages().get(adapter.getItemCount() - 1).setMe(AppConstants.other_after_other);
+                }
+
+            }
+        }else{
+         /*   if(chatMessage.isMe() == AppConstants.me){
+
+            }else if(chatMessage.isMe() == AppConstants.other){
+                chatMessage.setMe(AppConstants.other_after_other);
+            }*/
+        }
         adapter.addChat(chatMessage);
     }
 
+
+    private void disableChat(){
+        text.setEnabled(false);
+        chatSendButton.setEnabled(false);
+    }
+    private void addLeaveMessage(){
+        ChatMessage msg = new ChatMessage();
+        msg.setChatId("9998888");
+        msg.setMe(AppConstants.left);
+        msg.setTimeStamp(System.currentTimeMillis());
+        msg.setMessage(" Stranger left");
+        addChatMessage(msg);
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -246,5 +313,11 @@ public class ChatActivity extends AppCompatActivity {
         ChatAppData.getInstance(this).putBoolean(AppConstants.ACTIVTIY_FOREGROUND, false);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(this, " Leaving the chat", Toast.LENGTH_SHORT).show();
+        leaveCurrentChat();
+        Intent nIntent = new Intent(this, MainActivity.class);
+        startActivity(nIntent);
+    }
 }

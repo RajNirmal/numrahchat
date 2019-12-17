@@ -1,8 +1,8 @@
 package chatapp.numrah.com.chatapp;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -13,21 +13,23 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     private ArrayList<ChatMessage> chatMessages;
+    private Context context;
+    AppLogger logger;
 
-    public ChatAdapter(ArrayList<ChatMessage> data){
+    public ChatAdapter(Context context,ArrayList<ChatMessage> data){
         chatMessages = data;
+        this.context =context;
+        logger = new AppLogger();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -57,6 +59,10 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
             }
         }
+
+        public void setMessageBackground(Drawable background){
+          singleMessage.setBackground(background);
+        }
     }
 
     @Override
@@ -70,6 +76,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
+//        logger.info(" Total Positions : "+getItemCount()+ " Position : "+position);
         CardView singleMessage = viewHolder.singleMessage;
         TextView chatMessage = viewHolder.chatMessage;
         TextView chatTimestamp = viewHolder.chatTimestamp;
@@ -77,11 +84,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         RelativeLayout chatCompleteView = viewHolder.chatCompleteView;
         LinearLayout chatUltimateView = viewHolder.chatUltimateView;
         Long timeStamp = chatMessages.get(position).getTimeStamp();
-
         chatMessage.setText(chatMessages.get(position).getMessage());
-
+        Drawable box, boxLeftTail, boxRightTail;
+//        box = context.getDrawable(R.drawable.chat_box);
+//        boxLeftTail = context.getDrawable(R.drawable.zoho_tail_left_nine);
+//        boxRightTail = context.getDrawable(R.drawable.zoho_tail_right_nine);
         chatTimestamp.setText(convertTimestampToString(timeStamp));
-        if(chatMessages.get(position).isMe()){
+        int chatSender = chatMessages.get(position).isMe();
+//        logger.info(" The chat sender is "+ chatSender);
+        if(chatSender == AppConstants.me || chatSender == AppConstants.me_after_me){
             chatUltimateView.setGravity(Gravity.END);
             int chatStatusInt = chatMessages.get(position).getMessageState();
             if(chatStatusInt == 1){
@@ -89,9 +100,25 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
             }else if(chatStatusInt == 2){
                 chatStatus.setImageResource(R.drawable.two_tick);
             }
-        }else{
+            if(chatSender == AppConstants.me){
+//                singleMessage.setBackgroundResource(R.drawable.tail_right);
+            }else{
+//                singleMessage.setBackgroundResource(R.drawable.chat_box);
+            }
+        }else if(chatSender == AppConstants.other || chatSender == AppConstants.other_after_other){
             chatUltimateView.setGravity(Gravity.START);
             chatStatus.setVisibility(View.INVISIBLE);
+            if(chatSender == AppConstants.other){
+//                singleMessage.setBackgroundResource(R.drawable.tail_left);
+            }else{
+//                singleMessage.setBackgroundResource(R.drawable.chat_box);
+            }
+        }else if(chatSender == AppConstants.left){
+            chatUltimateView.setGravity(Gravity.CENTER);
+            chatStatus.setVisibility(View.GONE);
+            chatTimestamp.setVisibility(View.GONE);
+            chatMessage.setTextColor(context.getResources().getColor(R.color.colorPrimaryDark));
+            chatMessage.setCompoundDrawablesWithIntrinsicBounds(context.getDrawable(R.drawable.ic_user_left), null, null, null );
         }
 
     }
@@ -112,6 +139,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     public void addChat(ChatMessage msg){
         chatMessages.add(msg);
+        notifyItemChanged(chatMessages.size() - 1);
         notifyDataSetChanged();
     }
 

@@ -76,6 +76,7 @@ public class DataHandler extends SQLiteOpenHelper {
             result = true;
         }
         cr.close();
+        logger.info(" Key : "+key + " Exists : "+result);
         return result;
     }
 
